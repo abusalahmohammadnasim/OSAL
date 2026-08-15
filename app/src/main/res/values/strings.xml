@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">App Lock</string>
+    <string name="accessibility_service_description">Lets App Lock detect when a locked app is opened so it can show the PIN screen. It does not read screen content.</string>
+</resources>
