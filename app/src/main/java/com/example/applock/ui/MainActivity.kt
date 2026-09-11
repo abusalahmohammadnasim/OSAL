@@ -1,7 +1,6 @@
 package com.example.applock.ui
 
 import android.content.Intent
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -17,10 +16,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adapter: AppListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate()
+        super.onCreate(savedInstanceState)
 
-        // First-run: redirect to PIN setup if no PIN is saved yet
-        if (PrefsHelper.getPin(this) == null) {
+        // Redirect to PIN setup if PIN is not configured yet
+        if (!PrefsHelper.hasPin(this)) {
             startActivity(Intent(this, PinSetupActivity::class.java))
             finish()
             return
@@ -39,17 +38,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        adapter = AppListAdapter { appInfo, isLocked ->
-            PrefsHelper.setAppLocked(this, appInfo.packageName, isLocked)
+        adapter = AppListAdapter(emptyList()) { appInfo, isLocked ->
+            PrefsHelper.setLocked(this, appInfo.packageName, isLocked)
         }
-        binding.recyclerViewApps.layoutManager = LinearLayoutManager(this)
-        binding.recyclerViewApps.adapter = adapter
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.adapter = adapter
     }
 
     private fun loadInstalledApps() {
         val pm = packageManager
         
-        // GET_META_DATA দিয়ে সিস্টেম অ্যাপসহ সব প্যাকেজ আনা হয়
         val packages = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             pm.getInstalledPackages(PackageManager.PackageInfoFlags.of(PackageManager.GET_META_DATA.toLong()))
         } else {
@@ -62,23 +60,21 @@ class MainActivity : AppCompatActivity() {
         for (pkgInfo in packages) {
             val packageName = pkgInfo.packageName
 
-            // নিজের অ্যাপ লকার ব্যতীত প্যাকেজ ইনস্টলার সহ সব অ্যাপ তালিকায় যুক্ত হবে
+            // Includes package installer and all system apps except this applock itself
             if (packageName != this.packageName) {
                 val appName = pkgInfo.applicationInfo.loadLabel(pm).toString()
                 val icon = pkgInfo.applicationInfo.loadIcon(pm)
-                val isLocked = PrefsHelper.isAppLocked(this, packageName)
+                val isLocked = PrefsHelper.isLocked(this, packageName)
 
                 appList.add(AppInfo(appName, packageName, icon, isLocked))
             }
         }
 
-        // অ্যাপের নাম অনুযায়ী সাজানো
-        appList.sortBy { it.name.lowercase() }
-        adapter.submitList(appList)
+        appList.sortBy { it.appName.lowercase() }
+        adapter.updateApps(appList)
     }
 
     private fun checkPermissionsPrompt() {
-        // Prompt for Overlay permission if not granted
         if (!Settings.canDrawOverlays(this)) {
             val intent = Intent(
                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
