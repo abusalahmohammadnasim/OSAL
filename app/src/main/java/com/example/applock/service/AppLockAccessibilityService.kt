@@ -4,16 +4,13 @@ import android.accessibilityservice.AccessibilityService
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import com.example.applock.ui.LockScreenActivity
 import com.example.applock.util.PrefsHelper
 
 class AppLockAccessibilityService : AccessibilityService() {
 
-    // Package that is currently "unlocked" (user just entered the correct PIN for it).
-    // It stays unlocked only while it remains the foreground app; the moment the
-    // foreground app changes to something else, this is cleared, so returning to
-    // the locked app later re-prompts for the PIN.
     private var unlockedPackage: String? = null
     private var ownPackage: String = ""
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -25,50 +22,63 @@ class AppLockAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        val pkg = event?.packageName?.toString() ?: return
-        if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
+        // ক্র্যাশ রোধে সম্পূর্ণ লজিককে try-catch ব্লকের ভেতর রাখা হয়েছে
+        try {
+            val pkg = event?.packageName?.toString() ?: return
+            if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
 
-        if (pkg == ownPackage) {
-            // Our own lock screen has taken over the foreground — the real
-            // UI is now covering everything, so the instant scrim is no
-            // longer needed.
-            clearOverlaySafety()
-            OverlayBlocker.hide()
-            return
-        }
-
-        if (pkg != unlockedPackage) {
-            // Foreground app changed to something not currently unlocked.
-            unlockedPackage = null
-            if (PrefsHelper.isAppLocked(applicationContext, pkg)) {
-                // Put the opaque blocker up FIRST — this is near-instant
-                // (a plain WindowManager view, no Activity launch cost) and
-                // blocks both the content flash and any touches/scrolling on
-                // the app underneath while the real lock screen spins up.
-                OverlayBlocker.show(applicationContext)
-                armOverlaySafety()
-                launchLockScreen(pkg)
-            } else {
-                OverlayBlocker.hide()
+            if (pkg == ownPackage) {
+                clearOverlaySafety()
+                safeHideOverlay()
+                return
             }
+
+            if (pkg != unlockedPackage) {
+                unlockedPackage = null
+                if (PrefsHelper.isAppLocked(applicationContext, pkg)) {
+                    safeShowOverlay()
+                    armOverlaySafety()
+                    launchLockScreen(pkg)
+                } else {
+                    safeHideOverlay()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("AppLockService", "Error processing accessibility event: ${e.message}")
+        }
+    }
+
+    private fun safeShowOverlay() {
+        try {
+            OverlayBlocker.show(applicationContext)
+        } catch (e: Exception) {
+            Log.e("AppLockService", "Failed to show overlay: ${e.message}")
+        }
+    }
+
+    private fun safeHideOverlay() {
+        try {
+            OverlayBlocker.hide()
+        } catch (e: Exception) {
+            Log.e("AppLockService", "Failed to hide overlay: ${e.message}")
         }
     }
 
     private fun launchLockScreen(targetPackage: String) {
-        val intent = Intent(this, LockScreenActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            putExtra(LockScreenActivity.EXTRA_TARGET_PACKAGE, targetPackage)
+        try {
+            val intent = Intent(this, LockScreenActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                putExtra(LockScreenActivity.EXTRA_TARGET_PACKAGE, targetPackage)
+            }
+            startActivity(intent)
+        } catch (e: Exception) {
+            Log.e("AppLockService", "Failed to launch LockScreenActivity: ${e.message}")
         }
-        startActivity(intent)
     }
 
-    // If for any reason LockScreenActivity never reports itself in the
-    // foreground (e.g. it was blocked by the OS), don't leave the user
-    // staring at a permanent black screen — drop the overlay after a short
-    // safety window.
     private fun armOverlaySafety() {
         clearOverlaySafety()
-        val runnable = Runnable { OverlayBlocker.hide() }
+        val runnable = Runnable { safeHideOverlay() }
         overlaySafetyRunnable = runnable
         mainHandler.postDelayed(runnable, 4000)
     }
@@ -82,7 +92,7 @@ class AppLockAccessibilityService : AccessibilityService() {
     fun markUnlocked(pkg: String) {
         unlockedPackage = pkg
         clearOverlaySafety()
-        OverlayBlocker.hide()
+        safeHideOverlay()
     }
 
     companion object {
@@ -97,7 +107,7 @@ class AppLockAccessibilityService : AccessibilityService() {
     override fun onDestroy() {
         super.onDestroy()
         clearOverlaySafety()
-        OverlayBlocker.hide()
+        safeHideOverlay()
         instance = null
     }
 
