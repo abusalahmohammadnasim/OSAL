@@ -18,7 +18,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // PrefsHelper.isPinSet ব্যবহার করা হয়েছে
         if (!PrefsHelper.isPinSet(this)) {
             startActivity(Intent(this, PinSetupActivity::class.java))
             finish()
@@ -49,8 +48,9 @@ class MainActivity : AppCompatActivity() {
             appInfo.isLocked = isChecked
         }
         
-        binding.recyclerViewApps.layoutManager = LinearLayoutManager(this)
-        binding.recyclerViewApps.adapter = adapter
+        // এখানে binding.recyclerViewApps বদলে binding.recyclerView দেওয়া হয়েছে
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.adapter = adapter
     }
 
     private fun loadInstalledApps() {
