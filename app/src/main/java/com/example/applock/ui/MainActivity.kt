@@ -14,11 +14,11 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: AppListAdapter
+    private var appList = mutableListOf<AppInfo>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // PIN না দেওয়া থাকলে সেটিংস পেজে পাঠাবে
         if (PrefsHelper.getPin(this) == null) {
             startActivity(Intent(this, PinSetupActivity::class.java))
             finish()
@@ -38,14 +38,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        // AppListAdapter সঠিক ২টি প্যারামিটার নিচ্ছে
-        adapter = AppListAdapter(this) { appInfo ->
+        adapter = AppListAdapter(appList) { appInfo ->
             val updatedState = !appInfo.isLocked
             PrefsHelper.setAppLocked(this, appInfo.packageName, updatedState)
             loadInstalledApps()
         }
         
-        // ViewBinding এ recyclerViewApps ব্যবহার
         binding.recyclerViewApps.layoutManager = LinearLayoutManager(this)
         binding.recyclerViewApps.adapter = adapter
     }
@@ -60,24 +58,22 @@ class MainActivity : AppCompatActivity() {
             pm.getInstalledPackages(PackageManager.GET_META_DATA)
         }
 
-        val appList = mutableListOf<AppInfo>()
+        appList.clear()
 
         for (pkgInfo in packages) {
             val packageName = pkgInfo.packageName
 
-            // নিজ অ্যাপ ছাড়া প্যাকেজ ইনস্টলার সহ সব অ্যাপ ফিল্টার করবে
             if (packageName != this.packageName) {
-                val name = pkgInfo.applicationInfo.loadLabel(pm).toString()
+                val appName = pkgInfo.applicationInfo.loadLabel(pm).toString()
                 val icon = pkgInfo.applicationInfo.loadIcon(pm)
                 val isLocked = PrefsHelper.isAppLocked(this, packageName)
 
-                // AppInfo মডেলে সঠিক ফিল্ড নাম `name`
-                appList.add(AppInfo(name, packageName, icon, isLocked))
+                appList.add(AppInfo(appName, packageName, icon, isLocked))
             }
         }
 
-        appList.sortBy { it.name.lowercase() }
-        adapter.submitList(appList)
+        appList.sortBy { it.appName.lowercase() }
+        adapter.notifyDataSetChanged()
     }
 
     private fun checkPermissionsPrompt() {
