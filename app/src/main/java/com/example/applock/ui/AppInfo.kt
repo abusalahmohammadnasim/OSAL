@@ -3,8 +3,8 @@ package com.example.applock.ui
 import android.graphics.drawable.Drawable
 
 data class AppInfo(
-    val appName: String,
+    val label: String,
     val packageName: String,
     val icon: Drawable,
-    var isLocked: Boolean
+    var locked: Boolean
 )
