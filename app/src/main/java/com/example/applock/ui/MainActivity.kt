@@ -48,9 +48,9 @@ class MainActivity : AppCompatActivity() {
             appInfo.isLocked = isChecked
         }
         
-        // এখানে binding.recyclerViewApps বদলে binding.recyclerView দেওয়া হয়েছে
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        binding.recyclerView.adapter = adapter
+        // আপনার XML এর আসল ID 'rvApps' এখানে দেওয়া হয়েছে
+        binding.rvApps.layoutManager = LinearLayoutManager(this)
+        binding.rvApps.adapter = adapter
     }
 
     private fun loadInstalledApps() {
