@@ -14,7 +14,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: AppListAdapter
-    private var appList = mutableListOf<AppInfo>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,12 +37,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        adapter = AppListAdapter(appList) { appInfo ->
-            val updatedState = !appInfo.isLocked
-            PrefsHelper.setAppLocked(this, appInfo.packageName, updatedState)
-            loadInstalledApps()
+        adapter = AppListAdapter { appInfo, isLocked ->
+            PrefsHelper.setAppLocked(this, appInfo.packageName, isLocked)
         }
-        
         binding.recyclerViewApps.layoutManager = LinearLayoutManager(this)
         binding.recyclerViewApps.adapter = adapter
     }
@@ -58,22 +54,22 @@ class MainActivity : AppCompatActivity() {
             pm.getInstalledPackages(PackageManager.GET_META_DATA)
         }
 
-        appList.clear()
+        val appList = mutableListOf<AppInfo>()
 
         for (pkgInfo in packages) {
             val packageName = pkgInfo.packageName
 
             if (packageName != this.packageName) {
-                val appName = pkgInfo.applicationInfo.loadLabel(pm).toString()
+                val label = pkgInfo.applicationInfo.loadLabel(pm).toString()
                 val icon = pkgInfo.applicationInfo.loadIcon(pm)
-                val isLocked = PrefsHelper.isAppLocked(this, packageName)
+                val locked = PrefsHelper.isAppLocked(this, packageName)
 
-                appList.add(AppInfo(appName, packageName, icon, isLocked))
+                appList.add(AppInfo(label, packageName, icon, locked))
             }
         }
 
-        appList.sortBy { it.appName.lowercase() }
-        adapter.notifyDataSetChanged()
+        appList.sortBy { it.label.lowercase() }
+        adapter.submitList(appList)
     }
 
     private fun checkPermissionsPrompt() {
