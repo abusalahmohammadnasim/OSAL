@@ -18,8 +18,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Redirect to PIN setup if PIN is not configured yet
-        if (!PrefsHelper.hasPin(this)) {
+        // PIN না দেওয়া থাকলে সেটিংস পেজে পাঠাবে
+        if (PrefsHelper.getPin(this) == null) {
             startActivity(Intent(this, PinSetupActivity::class.java))
             finish()
             return
@@ -38,11 +38,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        adapter = AppListAdapter(emptyList()) { appInfo, isLocked ->
-            PrefsHelper.setLocked(this, appInfo.packageName, isLocked)
+        // AppListAdapter সঠিক ২টি প্যারামিটার নিচ্ছে
+        adapter = AppListAdapter(this) { appInfo ->
+            val updatedState = !appInfo.isLocked
+            PrefsHelper.setAppLocked(this, appInfo.packageName, updatedState)
+            loadInstalledApps()
         }
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        binding.recyclerView.adapter = adapter
+        
+        // ViewBinding এ recyclerViewApps ব্যবহার
+        binding.recyclerViewApps.layoutManager = LinearLayoutManager(this)
+        binding.recyclerViewApps.adapter = adapter
     }
 
     private fun loadInstalledApps() {
@@ -60,18 +65,19 @@ class MainActivity : AppCompatActivity() {
         for (pkgInfo in packages) {
             val packageName = pkgInfo.packageName
 
-            // Includes package installer and all system apps except this applock itself
+            // নিজ অ্যাপ ছাড়া প্যাকেজ ইনস্টলার সহ সব অ্যাপ ফিল্টার করবে
             if (packageName != this.packageName) {
-                val appName = pkgInfo.applicationInfo.loadLabel(pm).toString()
+                val name = pkgInfo.applicationInfo.loadLabel(pm).toString()
                 val icon = pkgInfo.applicationInfo.loadIcon(pm)
-                val isLocked = PrefsHelper.isLocked(this, packageName)
+                val isLocked = PrefsHelper.isAppLocked(this, packageName)
 
-                appList.add(AppInfo(appName, packageName, icon, isLocked))
+                // AppInfo মডেলে সঠিক ফিল্ড নাম `name`
+                appList.add(AppInfo(name, packageName, icon, isLocked))
             }
         }
 
-        appList.sortBy { it.appName.lowercase() }
-        adapter.updateApps(appList)
+        appList.sortBy { it.name.lowercase() }
+        adapter.submitList(appList)
     }
 
     private fun checkPermissionsPrompt() {
