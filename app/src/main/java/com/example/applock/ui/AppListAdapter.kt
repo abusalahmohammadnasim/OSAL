@@ -6,13 +6,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.applock.databinding.ItemAppBinding
 
 class AppListAdapter(
+    private var appList: List<AppInfo>,
     private val onAppClick: (AppInfo, Boolean) -> Unit
 ) : RecyclerView.Adapter<AppListAdapter.AppViewHolder>() {
 
-    private var appList: List<AppInfo> = emptyList()
-
-    fun submitList(newList: List<AppInfo>) {
-        appList = newList
+    fun updateApps(newApps: List<AppInfo>) {
+        appList = newApps
         notifyDataSetChanged()
     }
 
@@ -29,14 +28,14 @@ class AppListAdapter(
 
     inner class AppViewHolder(private val binding: ItemAppBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(appInfo: AppInfo) {
-            binding.tvAppName.text = appInfo.label
-            binding.imgAppIcon.setImageDrawable(appInfo.icon)
-            binding.switchLock.isChecked = appInfo.locked
+            binding.tvName.text = appInfo.appName
+            binding.ivIcon.setImageDrawable(appInfo.icon)
+            
+            binding.switchLock.setOnCheckedChangeListener(null)
+            binding.switchLock.isChecked = appInfo.isLocked
 
             binding.switchLock.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked != appInfo.locked) {
-                    onAppClick(appInfo, isChecked)
-                }
+                onAppClick(appInfo, isChecked)
             }
         }
     }
