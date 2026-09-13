@@ -1,42 +1,55 @@
 package com.example.applock.ui
 
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.widget.SwitchCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.example.applock.databinding.ItemAppBinding
+import com.example.applock.R
+
+data class AppInfo(
+    val appName: String,
+    val packageName: String,
+    val icon: Drawable,
+    var isLocked: Boolean
+)
 
 class AppListAdapter(
-    private var appList: List<AppInfo>,
-    private val onAppClick: (AppInfo, Boolean) -> Unit
+    private var apps: List<AppInfo>,
+    private val onLockChanged: (AppInfo, Boolean) -> Unit
 ) : RecyclerView.Adapter<AppListAdapter.AppViewHolder>() {
 
-    fun updateApps(newApps: List<AppInfo>) {
-        appList = newApps
-        notifyDataSetChanged()
+    class AppViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val imgIcon: ImageView = view.findViewById(R.id.imgAppIcon)
+        val tvName: TextView = view.findViewById(R.id.tvAppName)
+        val switchLock: SwitchCompat = view.findViewById(R.id.switchLock)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppViewHolder {
-        val binding = ItemAppBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return AppViewHolder(binding)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_app, parent, false)
+        return AppViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: AppViewHolder, position: Int) {
-        holder.bind(appList[position])
+        val app = apps[position]
+        holder.tvName.text = app.appName
+        holder.imgIcon.setImageDrawable(app.icon)
+        
+        holder.switchLock.setOnCheckedChangeListener(null)
+        holder.switchLock.isChecked = app.isLocked
+
+        holder.switchLock.setOnCheckedChangeListener { _, isChecked ->
+            onLockChanged(app, isChecked)
+        }
     }
 
-    override fun getItemCount(): Int = appList.size
+    override fun getItemCount(): Int = apps.size
 
-    inner class AppViewHolder(private val binding: ItemAppBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(appInfo: AppInfo) {
-            binding.tvName.text = appInfo.appName
-            binding.ivIcon.setImageDrawable(appInfo.icon)
-            
-            binding.switchLock.setOnCheckedChangeListener(null)
-            binding.switchLock.isChecked = appInfo.isLocked
-
-            binding.switchLock.setOnCheckedChangeListener { _, isChecked ->
-                onAppClick(appInfo, isChecked)
-            }
-        }
+    fun updateApps(newApps: List<AppInfo>) {
+        this.apps = newApps
+        notifyDataSetChanged()
     }
 }
