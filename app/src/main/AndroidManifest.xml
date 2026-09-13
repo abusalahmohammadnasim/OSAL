@@ -31,7 +31,8 @@
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="App Lock"
-        android:theme="@style/Theme.AppLock"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.OSAL"
         android:roundIcon="@mipmap/ic_launcher">
 
         <activity
@@ -52,13 +53,13 @@
             android:exported="false"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
-            android:showOnLockScreen="true"
-            android:theme="@style/Theme.AppLock.NoActionBar" />
+            android:showOnLockScreen="true" />
 
         <service
             android:name=".service.AppLockAccessibilityService"
             android:exported="true"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:foregroundServiceType="specialUse"
             android:label="App Lock Guard">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
@@ -69,7 +70,7 @@
         </service>
 
         <receiver
-            android:name=".service.MyDeviceAdminReceiver"
+            android:name=".receiver.AdminReceiver"
             android:exported="true"
             android:permission="android.permission.BIND_DEVICE_ADMIN">
             <meta-data
