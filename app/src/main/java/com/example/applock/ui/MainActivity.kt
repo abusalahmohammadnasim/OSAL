@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.applock.R
 import com.example.applock.receiver.AdminReceiver
+import com.example.applock.util.PrefsHelper
 
 class MainActivity : AppCompatActivity() {
 
@@ -67,13 +68,14 @@ class MainActivity : AppCompatActivity() {
             val icon = pm.getApplicationIcon(app)
 
             if (packageName != this.packageName) {
-                appList.add(AppInfo(appName, packageName, icon, false))
+                val isLocked = PrefsHelper.isAppLocked(this, packageName)
+                appList.add(AppInfo(appName, packageName, icon, isLocked))
             }
         }
 
-        appList.sortBy { it.appName.lowercase() }
+        appList.sortBy { it.name.lowercase() }
         adapter = AppListAdapter(appList) { appInfo, isLocked ->
-            // Save lock state logic
+            PrefsHelper.setAppLocked(this, appInfo.packageName, isLocked)
         }
         rvApps.adapter = adapter
     }
