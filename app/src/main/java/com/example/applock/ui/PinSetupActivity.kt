@@ -2,22 +2,24 @@ package com.example.applock.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.applock.databinding.ActivityPinSetupBinding
+import com.example.applock.R
 import com.example.applock.util.PrefsHelper
 
 class PinSetupActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityPinSetupBinding
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityPinSetupBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_pin_setup)
 
-        binding.btnSavePin.setOnClickListener {
-            val pin = binding.etPin.text.toString().trim()
+        val btnSavePin = findViewById<Button>(R.id.btnSavePin)
+        val etPin = findViewById<EditText>(R.id.etPin)
+
+        btnSavePin.setOnClickListener {
+            val pin = etPin.text.toString().trim()
             if (pin.length >= 4) {
                 PrefsHelper.setPin(this, pin)
                 Toast.makeText(this, "PIN Saved Successfully", Toast.LENGTH_SHORT).show()
