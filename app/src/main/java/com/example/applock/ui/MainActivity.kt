@@ -7,12 +7,14 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.Settings
+import android.view.Menu
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.applock.R
-import com.example.applock.receiver.AdminReceiver
+import com.example.applock.receiver.MyDeviceAdminReceiver
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,6 +24,19 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ১. আগে চেক করব PIN সেট করা আছে কিনা
+        val prefs = getSharedPreferences("app_lock_prefs", Context.MODE_PRIVATE)
+        val savedPin = prefs.getString("app_pin", null)
+
+        // যদি PIN সেট করা না থাকে, তবে সরাসরি PIN সেট করার স্ক্রিনে পাঠাবে
+        if (savedPin.isNull_or_Empty()) {
+            val intent = Intent(this, PinSetupActivity::class.java)
+            startActivity(intent)
+            finish()
+            return
+        }
+
         setContentView(R.layout.activity_main)
 
         rvApps = findViewById(R.id.rvApps)
@@ -32,9 +47,31 @@ class MainActivity : AppCompatActivity() {
         loadAllApps()
     }
 
+    private fun String?.isNull_or_Empty(): Boolean {
+        return this == null || this.isEmpty()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        val searchItem = menu?.findItem(R.id.action_search)
+        val searchView = searchItem?.actionView as? SearchView
+
+        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                adapter.filter(newText.orEmpty())
+                return true
+            }
+        })
+        return true
+    }
+
     private fun checkAndEnableDeviceAdmin() {
         val devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        val compName = ComponentName(this, AdminReceiver::class.java)
+        val compName = ComponentName(this, MyDeviceAdminReceiver::class.java)
 
         if (!devicePolicyManager.isAdminActive(compName)) {
             val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
