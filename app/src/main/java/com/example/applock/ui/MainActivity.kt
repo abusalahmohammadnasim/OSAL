@@ -25,9 +25,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // PIN চেক (পিন সেট না থাকলে পিন সেটআপ স্ক্রিনে পাঠাবে)
         val prefs = getSharedPreferences("app_lock_prefs", Context.MODE_PRIVATE)
-        val savedPin = prefs.getString("app_pin", null)
+        val savedPin = prefs.getString("app_pin", "")
 
         if (savedPin.isNullOrEmpty()) {
             val pinIntent = Intent(this, PinSetupActivity::class.java)
@@ -58,7 +57,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 if (::adapter.isInitialized) {
-                    adapter.filter(newText.orEmpty())
+                    adapter.filter(newText ?: "")
                 }
                 return true
             }
