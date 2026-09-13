@@ -9,12 +9,12 @@ import android.os.PowerManager
 import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.applock.R
+import com.example.applock.databinding.ActivityMainBinding
 import com.example.applock.util.PrefsHelper
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: AppListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,7 +26,8 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         setupRecyclerView()
         checkPermissionsPrompt()
@@ -38,8 +39,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        val rvApps = findViewById<RecyclerView>(R.id.rvApps)
-        
         adapter = AppListAdapter(emptyList()) { appInfo, isChecked ->
             val lockedApps = PrefsHelper.getLockedApps(this).toMutableSet()
             if (isChecked) {
@@ -51,8 +50,8 @@ class MainActivity : AppCompatActivity() {
             appInfo.isLocked = isChecked
         }
         
-        rvApps.layoutManager = LinearLayoutManager(this)
-        rvApps.adapter = adapter
+        binding.rvApps.layoutManager = LinearLayoutManager(this)
+        binding.rvApps.adapter = adapter
     }
 
     private fun loadInstalledApps() {
