@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        appList.sortBy { it.name.lowercase() }
+        appList.sortBy { it.appName.lowercase() }
         adapter = AppListAdapter(appList) { appInfo, isLocked ->
             PrefsHelper.setAppLocked(this, appInfo.packageName, isLocked)
         }
