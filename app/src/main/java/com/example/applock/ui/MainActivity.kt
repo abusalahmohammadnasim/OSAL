@@ -48,7 +48,6 @@ class MainActivity : AppCompatActivity() {
             appInfo.isLocked = isChecked
         }
         
-        // আপনার XML এর আসল ID 'rvApps' এখানে দেওয়া হয়েছে
         binding.rvApps.layoutManager = LinearLayoutManager(this)
         binding.rvApps.adapter = adapter
     }
