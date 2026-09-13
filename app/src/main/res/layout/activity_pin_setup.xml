@@ -4,40 +4,31 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:padding="32dp">
+    android:padding="24dp">
 
     <TextView
-        android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Set a PIN"
-        android:textSize="22sp"
+        android:text="Setup New PIN"
+        android:textSize="20sp"
+        android:textStyle="bold"
         android:layout_marginBottom="24dp" />
 
     <EditText
-        android:id="@+id/etPin1"
-        android:layout_width="200dp"
+        android:id="@+id/etPin"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="New PIN"
+        android:hint="Enter 4-digit PIN"
         android:inputType="numberPassword"
+        android:maxLength="4"
         android:gravity="center"
-        android:maxLength="8" />
-
-    <EditText
-        android:id="@+id/etPin2"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:hint="Confirm PIN"
-        android:inputType="numberPassword"
-        android:gravity="center"
-        android:layout_marginTop="12dp"
-        android:maxLength="8" />
+        android:textSize="24sp"
+        android:layout_marginBottom="16dp" />
 
     <Button
-        android:id="@+id/btnSave"
-        android:layout_width="wrap_content"
+        android:id="@+id/btnSavePin"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Save"
-        android:layout_marginTop="24dp" />
+        android:text="Save PIN" />
 
 </LinearLayout>
