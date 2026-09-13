@@ -32,7 +32,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="App Lock"
         android:supportsRtl="true"
-        android:theme="@style/Theme.OSAL"
+        android:theme="@style/Theme.AppLock"
         android:roundIcon="@mipmap/ic_launcher">
 
         <activity
