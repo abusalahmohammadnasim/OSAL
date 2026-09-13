@@ -1,27 +1,20 @@
 package com.example.applock.ui
 
-import android.app.admin.DevicePolicyManager
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.Parcelable
 import android.provider.Settings
-import android.view.Menu
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.applock.R
-import com.example.applock.receiver.MyDeviceAdminReceiver
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var rvApps: RecyclerView
     private lateinit var adapter: AppListAdapter
-    private val ADMIN_REQUEST_CODE = 123
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,41 +34,8 @@ class MainActivity : AppCompatActivity() {
         rvApps = findViewById(R.id.rvApps)
         rvApps.layoutManager = LinearLayoutManager(this)
 
-        checkAndEnableDeviceAdmin()
         checkAccessibilityPermission()
         loadAllApps()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.main_menu, menu)
-        val searchItem = menu?.findItem(R.id.action_search)
-        val searchView = searchItem?.actionView as? SearchView
-
-        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                return false
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                if (::adapter.isInitialized) {
-                    adapter.filter(newText ?: "")
-                }
-                return true
-            }
-        })
-        return true
-    }
-
-    private fun checkAndEnableDeviceAdmin() {
-        val devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        val compName = ComponentName(this, MyDeviceAdminReceiver::class.java)
-
-        if (!devicePolicyManager.isAdminActive(compName)) {
-            val adminIntent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
-            adminIntent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, compName as Parcelable)
-            adminIntent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Enable Device Admin to prevent unauthorized uninstallation.")
-            startActivityForResult(adminIntent, ADMIN_REQUEST_CODE)
-        }
     }
 
     private fun checkAccessibilityPermission() {
