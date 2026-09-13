@@ -14,6 +14,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.applock.R
+import com.example.applock.model.AppInfo
 import com.example.applock.receiver.MyDeviceAdminReceiver
 
 class MainActivity : AppCompatActivity() {
@@ -106,7 +107,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         appList.sortBy { it.appName.lowercase() }
-        adapter = AppListAdapter(appList) { appInfo, isLocked ->
+        adapter = AppListAdapter(appList) { appInfo: AppInfo, isLocked: Boolean ->
             prefs.edit().putBoolean(appInfo.packageName, isLocked).apply()
         }
         rvApps.adapter = adapter
