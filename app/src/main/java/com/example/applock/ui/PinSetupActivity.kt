@@ -19,7 +19,6 @@ class PinSetupActivity : AppCompatActivity() {
         binding.btnSavePin.setOnClickListener {
             val pin = binding.etPin.text.toString().trim()
             if (pin.length >= 4) {
-                // এখানে savePin এর পরিবর্তে আসল মেথড setPin ব্যবহার করা হয়েছে
                 PrefsHelper.setPin(this, pin)
                 Toast.makeText(this, "PIN Saved Successfully", Toast.LENGTH_SHORT).show()
                 startActivity(Intent(this, MainActivity::class.java))
