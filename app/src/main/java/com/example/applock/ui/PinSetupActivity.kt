@@ -1,5 +1,6 @@
 package com.example.applock.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -15,20 +16,17 @@ class PinSetupActivity : AppCompatActivity() {
         binding = ActivityPinSetupBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.btnSave.setOnClickListener {
-            val pin1 = binding.etPin1.text.toString()
-            val pin2 = binding.etPin2.text.toString()
-            when {
-                pin1.length < 4 -> toast("PIN must be at least 4 digits")
-                pin1 != pin2 -> toast("PINs don't match")
-                else -> {
-                    PrefsHelper.setPin(this, pin1)
-                    toast("PIN saved")
-                    finish()
-                }
+        binding.btnSavePin.setOnClickListener {
+            val pin = binding.etPin.text.toString().trim()
+            if (pin.length >= 4) {
+                // এখানে savePin এর পরিবর্তে আসল মেথড setPin ব্যবহার করা হয়েছে
+                PrefsHelper.setPin(this, pin)
+                Toast.makeText(this, "PIN Saved Successfully", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, MainActivity::class.java))
+                finish()
+            } else {
+                Toast.makeText(this, "Enter at least 4 digits PIN", Toast.LENGTH_SHORT).show()
             }
         }
     }
-
-    private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 }
