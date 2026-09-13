@@ -15,13 +15,10 @@ class LockScreenActivity : AppCompatActivity() {
     private lateinit var etPin: EditText
     private lateinit var btnUnlock: Button
     private lateinit var tvStatus: TextView
-    private var targetPackage: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_lock_screen)
-
-        targetPackage = intent.getStringExtra("TARGET_PACKAGE")
 
         etPin = findViewById(R.id.etPin)
         btnUnlock = findViewById(R.id.btnUnlock)
@@ -44,7 +41,6 @@ class LockScreenActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        // Go to Home Screen instead of unlocking app on back press
         val homeIntent = Intent(Intent.ACTION_MAIN).apply {
             addCategory(Intent.CATEGORY_HOME)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
