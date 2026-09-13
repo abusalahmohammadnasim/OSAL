@@ -1,4 +1,4 @@
-package com.example.applock.model
+package com.example.applock.ui
 
 import android.graphics.drawable.Drawable
 
