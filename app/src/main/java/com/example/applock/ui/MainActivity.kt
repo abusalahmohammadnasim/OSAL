@@ -14,7 +14,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.applock.R
-import com.example.applock.model.AppInfo
+import com.example.applock.ui.AppInfo
 import com.example.applock.receiver.MyDeviceAdminReceiver
 
 class MainActivity : AppCompatActivity() {
@@ -71,9 +71,10 @@ class MainActivity : AppCompatActivity() {
         val compName = ComponentName(this, MyDeviceAdminReceiver::class.java)
 
         if (!devicePolicyManager.isAdminActive(compName)) {
-            val adminIntent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
-            adminIntent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, compName)
-            adminIntent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Enable Device Admin to prevent unauthorized uninstallation.")
+            val adminIntent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
+                putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, compName)
+                putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Enable Device Admin to prevent unauthorized uninstallation.")
+            }
             startActivityForResult(adminIntent, ADMIN_REQUEST_CODE)
         }
     }
