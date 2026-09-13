@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.applock.R
 import com.example.applock.receiver.AdminReceiver
-import com.example.applock.util.PrefsHelper
 
 class MainActivity : AppCompatActivity() {
 
@@ -61,6 +60,7 @@ class MainActivity : AppCompatActivity() {
         val pm = packageManager
         val packages = pm.getInstalledApplications(PackageManager.GET_META_DATA)
         val appList = mutableListOf<AppInfo>()
+        val prefs = getSharedPreferences("app_lock_prefs", Context.MODE_PRIVATE)
 
         for (app in packages) {
             val appName = pm.getApplicationLabel(app).toString()
@@ -68,14 +68,14 @@ class MainActivity : AppCompatActivity() {
             val icon = pm.getApplicationIcon(app)
 
             if (packageName != this.packageName) {
-                val isLocked = PrefsHelper.isAppLocked(this, packageName)
+                val isLocked = prefs.getBoolean(packageName, false)
                 appList.add(AppInfo(appName, packageName, icon, isLocked))
             }
         }
 
         appList.sortBy { it.appName.lowercase() }
         adapter = AppListAdapter(appList) { appInfo, isLocked ->
-            PrefsHelper.setAppLocked(this, appInfo.packageName, isLocked)
+            prefs.edit().putBoolean(appInfo.packageName, isLocked).apply()
         }
         rvApps.adapter = adapter
     }
