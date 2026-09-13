@@ -25,14 +25,13 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // ১. আগে চেক করব PIN সেট করা আছে কিনা
+        // PIN চেক (পিন সেট না থাকলে পিন সেটআপ স্ক্রিনে পাঠাবে)
         val prefs = getSharedPreferences("app_lock_prefs", Context.MODE_PRIVATE)
         val savedPin = prefs.getString("app_pin", null)
 
-        // যদি PIN সেট করা না থাকে, তবে সরাসরি PIN সেট করার স্ক্রিনে পাঠাবে
-        if (savedPin.isNull_or_Empty()) {
-            val intent = Intent(this, PinSetupActivity::class.java)
-            startActivity(intent)
+        if (savedPin.isNullOrEmpty()) {
+            val pinIntent = Intent(this, PinSetupActivity::class.java)
+            startActivity(pinIntent)
             finish()
             return
         }
@@ -47,10 +46,6 @@ class MainActivity : AppCompatActivity() {
         loadAllApps()
     }
 
-    private fun String?.isNull_or_Empty(): Boolean {
-        return this == null || this.isEmpty()
-    }
-
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
         val searchItem = menu?.findItem(R.id.action_search)
@@ -62,7 +57,9 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                adapter.filter(newText.orEmpty())
+                if (::adapter.isInitialized) {
+                    adapter.filter(newText.orEmpty())
+                }
                 return true
             }
         })
@@ -74,11 +71,10 @@ class MainActivity : AppCompatActivity() {
         val compName = ComponentName(this, MyDeviceAdminReceiver::class.java)
 
         if (!devicePolicyManager.isAdminActive(compName)) {
-            val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
-                putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, compName)
-                putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Enable Device Admin to prevent unauthorized uninstallation.")
-            }
-            startActivityForResult(intent, ADMIN_REQUEST_CODE)
+            val adminIntent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+            adminIntent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, compName)
+            adminIntent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Enable Device Admin to prevent unauthorized uninstallation.")
+            startActivityForResult(adminIntent, ADMIN_REQUEST_CODE)
         }
     }
 
